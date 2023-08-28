@@ -1,0 +1,11 @@
+dist/
+storage/
+.vscode/
+__pycache__
+*.pyc
+*.pyo
+.DS_STORE
+.chroma/
+todo.org
+.env
+config.json
