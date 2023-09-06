@@ -1,5 +1,5 @@
 import typer
-from src.vectore_store import load_or_create
+from src.vectore_store import load_or_create, destroy
 from src.models import RAG, AppSettings
 
 app = typer.Typer()
@@ -20,3 +20,13 @@ def refresh(name: str):
     for r in settings.rags:
         if r.name == name:
             load_or_create(data_dir=r.directory, persist_dir=r.persist_directory, refresh=True)
+
+
+@app.command(name="destroy")
+def destroy(name: str):
+    settings = AppSettings()
+    for r in settings.rags:
+        if r.name == name:
+            destroy(r.persist_directory)
+    settings.rags = [r for r in settings.rags if r.name != name]
+    settings.save()
