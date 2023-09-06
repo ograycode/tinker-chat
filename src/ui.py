@@ -1,5 +1,6 @@
-from typing import List
+from typing import Dict, List, Any
 from langchain.chains.base import Chain
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from rich.prompt import Prompt
 from rich import print as r_print
@@ -26,12 +27,11 @@ def prompt(txt: str = "[bold]>>>[/bold]"):
     
 def print_ai(txt: str):
     r_print()
-    r_print(f"[bold green]AI:[/bold green]", txt)
-    r_print()
+    r_print(f"[bold green]AI:[/bold green]", txt, end="")
 
 
 def chat_loop(chain: Chain, routes: List[Route]):
-    print_ai("Welcome! I'm hear to answer questions or just chat. I have access to the following:")
+    print_ai("Welcome! I'm hear to answer questions or just chat. I have access to the following:\n")
     t = Table()
     t.add_column("Name")
     t.add_column("Description")
@@ -40,8 +40,16 @@ def chat_loop(chain: Chain, routes: List[Route]):
 
     while True:
         query = prompt()
-        with spinner("generating response"):
-            result = chain(query)
-        print_ai(result.get("text", result))
+        chain(query, callbacks=[StreamOut()])
+        r_print()
+        r_print()
+
     
+class StreamOut(StreamingStdOutCallbackHandler):
     
+    def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        """Run on new LLM token. Only available when streaming is enabled."""
+        r_print(token, end="")
+        
+    def on_llm_start(self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any) -> None:
+        print_ai("")

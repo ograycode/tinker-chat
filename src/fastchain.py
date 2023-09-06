@@ -44,5 +44,4 @@ class FastChain:
             router_chain=router,
             destination_chains={r.name: r.chain for r in self.routes},
             default_chain=self._default_route.chain,
-            verbose=True
         )
