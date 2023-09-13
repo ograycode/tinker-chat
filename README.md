@@ -3,7 +3,7 @@
 # Install
 
 ```
-pip install -r requirements.txt
+pipenv install
 ```
 
 # Usage
