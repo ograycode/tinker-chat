@@ -1,27 +1,14 @@
-from langchain.callbacks.manager import Callbacks
-from langchain.document_loaders import WebBaseLoader
-from langchain.schema import Document
-from langchain.schema.document import Document
-from langchain.schema.retriever import BaseRetriever
-from langchain.chains.transform import TransformChain
+from langchain import PromptTemplate
+from langchain.chains.llm import LLMChain
+from langchain.schema.language_model import BaseLanguageModel
 from typing import Any, Dict, List
 from src.models import Route
+from src.llm import get_llm
 
-class WeatherRetriever(BaseRetriever):
-    url: str
-    def get_relevant_documents(self, query: str, *, callbacks: Callbacks = None, tags: List[str] | None = None, metadata: Dict[str, Any] | None = None, **kwargs: Any) -> List[Document]:
-        headers = {
-            'User-Agent': 'python-requests/2.31.0',
-            'Accept-Encoding': 'gzip, deflate, br, zstd',
-            'Accept': '*/*',
-            'Connection': 'keep-alive'
-        }
-        loader = WebBaseLoader(self.url, header_template=headers)
-        return loader.load()
-    
-def weather():
+
+def default_route(llm: BaseLanguageModel):
     return Route(
-        "weather",
-        "Good for answering questions about the weather, tempature and forcasts",
-        TransformChain(input_variables=["query"], output_variables=["text"], transform=lambda q: {"text": WeatherRetriever().get_relevant_documents(q)[0].page_content})
+        name="everything_else",
+        description="A comprehensive, versatile chatbot designed for multi-purpose interactions, adept at handling a broad spectrum of queries, topics, and discussions.",
+        chain=LLMChain(llm=llm, prompt=PromptTemplate.from_template("You are an AI assistant, respond to this in a helpful way: {query}"))
     )
