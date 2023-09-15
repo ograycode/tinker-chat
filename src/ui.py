@@ -37,6 +37,11 @@ def chat_loop(chain: Chain, routes: List[Route]):
     t.add_column("Description")
     [t.add_row(r.name, r.description) for r in routes]
     r_print(t)
+    print_ai("I'll do my best to use them based on what you type.")
+    r_print(" If you want to force one of them, just use a bang operator.")
+    r_print(f"Example: !{routes[0].name} will use {routes[0].name}")
+    r_print()
+    r_print()
 
     while True:
         query = prompt()

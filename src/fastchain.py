@@ -1,12 +1,14 @@
+import re
 from pydantic import BaseModel
 from langchain.chains.base import Chain
 from langchain.chains.router import MultiRouteChain
 from langchain.chains.router.embedding_router import EmbeddingRouterChain
+from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.vectorstores import Chroma
 from src.vectore_store import get_embeddings
 
 
-from typing import List
+from typing import Any, Dict, List, Optional
 
 
 class Route(BaseModel):
@@ -34,7 +36,7 @@ class FastChain:
         self.add_route(route, default_route=default_route)
 
     def create(self) -> Chain:
-        router = EmbeddingRouterChain.from_names_and_descriptions(
+        router = BangEmbeddingRouterChain.from_names_and_descriptions(
             [(r.name, r.description,) for r in self.routes],
             Chroma,
             get_embeddings()
@@ -45,3 +47,18 @@ class FastChain:
             destination_chains={r.name: r.chain for r in self.routes},
             default_chain=self._default_route.chain,
         )
+
+
+class BangEmbeddingRouterChain(EmbeddingRouterChain):
+    def _call(
+        self,
+        inputs: Dict[str, Any],
+        run_manager: Optional[CallbackManagerForChainRun] = None,
+    ) -> Dict[str, Any]:
+        _input = ", ".join([inputs[k] for k in self.routing_keys])
+        pattern = re.compile(r"^!(\w+)")
+        match = pattern.match(_input)
+        if match:
+            word = match.group(1)
+            return {"next_inputs": inputs, "destination": word}
+        return super()._call(inputs, run_manager)
