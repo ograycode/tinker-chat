@@ -1,6 +1,6 @@
 from src.fastchain import FastChain
 from src.llm import get_llm
-from src.routes import default_route
+from src.routes import default_route, wikipedia
 from src.models import AppSettings
 
 def create_ai():
@@ -11,6 +11,7 @@ def create_ai():
 
     for rag in settings.rags:
         ai.add_route(rag.create_route(llm))
+    ai.add_route(wikipedia(llm))
     route = default_route(llm)
     ai.add_route(route)
     ai.add_route(route, default_route=True)
