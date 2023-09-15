@@ -60,5 +60,6 @@ class BangEmbeddingRouterChain(EmbeddingRouterChain):
         match = pattern.match(_input)
         if match:
             word = match.group(1)
-            return {"next_inputs": inputs, "destination": word}
+            _input = _input[match.end()+1:]
+            return {"next_inputs": _input, "destination": word}
         return super()._call(inputs, run_manager)
