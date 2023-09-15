@@ -35,7 +35,7 @@ class FastChain:
         )
         self.add_route(route, default_route=default_route)
 
-    def create(self) -> Chain:
+    def build_chain(self) -> Chain:
         router = BangEmbeddingRouterChain.from_names_and_descriptions(
             [(r.name, r.description,) for r in self.routes],
             Chroma,

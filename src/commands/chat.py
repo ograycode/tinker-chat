@@ -5,7 +5,7 @@ def main():
 
     with spinner("building..."):
         ai = create_ai()
-        chain = ai.create()
+        chain = ai.build_chain()
     chat_loop(chain, ai.routes)
 
 
