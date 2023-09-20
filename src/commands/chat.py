@@ -4,9 +4,6 @@ from src.ui import spinner, chat_loop
 
 def main():
 
-    # llm = get_llm()
-    # ai = create_ai(llm)
-    # ChatApp(ai).run()
     with spinner("building..."):
         llm = get_llm()
         ai = create_ai(llm)
