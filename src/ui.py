@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from rich.table import Table
 
 from src.fastchain import FastChain, Route
+from src.logger import LoggingCallbackHandler
 
 @contextmanager
 def spinner(description: str, *args, transient=False, **kwargs) -> Progress:
@@ -44,12 +45,14 @@ def chat_loop(chain: Chain, routes: List[Route]):
     r_print()
     r_print()
 
+    logging_callback = LoggingCallbackHandler()
+
     while True:
         query = prompt()
         with spinner("[bold green]AI:[/bold green]",
                      RenderableColumn(table_column=Column(overflow="fold")),
                      transient=False) as spin:
-            chain(query, callbacks=[StreamOut(spin)])
+            chain(query, callbacks=[StreamOut(spin), logging_callback])
         r_print()
 
     
