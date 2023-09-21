@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 from langchain.chains.base import Chain
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
-from langchain.schema import LLMResult
+from langchain.schema import AgentFinish, LLMResult
 from rich.table import Column
 from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, RenderableColumn
 from rich.prompt import Prompt
@@ -61,6 +61,9 @@ class StreamOut(StreamingStdOutCallbackHandler):
     def __init__(self, spin: Progress, *args, **kwargs):
         self._spin = spin
         super().__init__(*args, **kwargs)
+
+    def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> None:
+        r_print(f"[bright_black]route: {finish.log}[/]")
     
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
         """Run on new LLM token. Only available when streaming is enabled."""

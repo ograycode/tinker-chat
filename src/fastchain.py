@@ -5,6 +5,7 @@ from langchain.chains.router import MultiRouteChain
 from langchain.chains.router.embedding_router import EmbeddingRouterChain
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.vectorstores import Chroma
+from langchain.schema.agent import AgentFinish
 from src.vectore_store import get_embeddings
 
 
@@ -61,5 +62,10 @@ class BangEmbeddingRouterChain(EmbeddingRouterChain):
         if match:
             word = match.group(1)
             _input = _input[match.end()+1:]
-            return {"next_inputs": _input, "destination": word}
-        return super()._call(inputs, run_manager)
+            found = {"next_inputs": _input, "destination": word}
+        else:
+            found = super()._call(inputs, run_manager)
+        run_manager.on_agent_finish(
+            AgentFinish(return_values=found, log=f"{found.get('destination')}")
+        )
+        return found
