@@ -6,6 +6,7 @@ from langchain.chains.router.embedding_router import EmbeddingRouterChain
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.vectorstores import Chroma
 from langchain.schema.agent import AgentFinish
+from src.ui import chat_loop, spinner
 from src.vectore_store import get_embeddings
 
 
@@ -48,6 +49,11 @@ class FastChain:
             destination_chains={r.name: r.chain for r in self.routes},
             default_chain=self._default_route.chain,
         )
+
+    def serve(self):
+        with spinner("building..."):
+            chain = self.build_chain()
+        chat_loop(chain, self.routes)
 
 
 class BangEmbeddingRouterChain(EmbeddingRouterChain):

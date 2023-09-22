@@ -10,7 +10,6 @@ from contextlib import contextmanager
 
 from rich.table import Table
 
-from src.fastchain import FastChain, Route
 from src.logger import LoggingCallbackHandler
 
 @contextmanager
@@ -32,7 +31,7 @@ def print_ai(txt: str):
     r_print(f"[bold green]AI:[/bold green]", txt, end="")
 
 
-def chat_loop(chain: Chain, routes: List[Route]):
+def chat_loop(chain: Chain, routes: List["Route"]):
     print_ai("Welcome! I'm hear to answer questions or just chat. I have access to the following:\n")
     t = Table()
     t.add_column("Name")
