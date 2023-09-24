@@ -2,10 +2,9 @@ import json
 from typing import List, Dict, Any
 from pathlib import Path
 from pydantic import BaseSettings, BaseModel
+from langchain.chains.base import Chain
 from langchain.chains import RetrievalQA
 from src.vectore_store import load_or_create
-
-from src.fastchain import Route
 
 CONFIG_FILE_NAME: str = "config.json"
 
@@ -22,6 +21,12 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     if file.exists():
         return json.loads(file.read_text(encoding))
     return {}
+
+
+class Route(BaseModel):
+    name: str
+    description: str
+    chain: Chain
 
 
 class RAG(BaseModel):

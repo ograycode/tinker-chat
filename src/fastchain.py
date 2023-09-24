@@ -1,22 +1,16 @@
 import re
-from pydantic import BaseModel
 from langchain.chains.base import Chain
 from langchain.chains.router import MultiRouteChain
 from langchain.chains.router.embedding_router import EmbeddingRouterChain
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.vectorstores import Chroma
 from langchain.schema.agent import AgentFinish
+from src.models import Route
 from src.ui import chat_loop, spinner
 from src.vectore_store import get_embeddings
 
 
 from typing import Any, Dict, List, Optional
-
-
-class Route(BaseModel):
-    name: str
-    description: str
-    chain: Chain
 
 
 class FastChain:

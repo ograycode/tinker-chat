@@ -3,7 +3,7 @@ from langchain.chains.base import Chain
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.schema import AgentFinish, LLMResult
 from rich.table import Column
-from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn, RenderableColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, RenderableColumn
 from rich.prompt import Prompt
 from rich import print as r_print
 from contextlib import contextmanager
@@ -11,9 +11,10 @@ from contextlib import contextmanager
 from rich.table import Table
 
 from src.logger import LoggingCallbackHandler
+from src.models import Route
 
 @contextmanager
-def spinner(description: str, *args, transient=False, **kwargs) -> Progress:
+def spinner(description: str, *args, **kwargs) -> Progress:
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -31,7 +32,7 @@ def print_ai(txt: str):
     r_print(f"[bold green]AI:[/bold green]", txt, end="")
 
 
-def chat_loop(chain: Chain, routes: List["Route"]):
+def chat_loop(chain: Chain, routes: List[Route]):
     print_ai("Welcome! I'm hear to answer questions or just chat. I have access to the following:\n")
     t = Table()
     t.add_column("Name")
