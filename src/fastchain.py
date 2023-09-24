@@ -5,7 +5,8 @@ from langchain.chains.router.embedding_router import EmbeddingRouterChain
 from langchain.callbacks.manager import CallbackManagerForChainRun
 from langchain.vectorstores import Chroma
 from langchain.schema.agent import AgentFinish
-from src.models import Route
+from src.models import Route, AppSettings
+from src.llm import get_llm
 from src.ui import chat_loop, spinner
 from src.vectore_store import get_embeddings
 
@@ -15,14 +16,22 @@ from typing import Any, Dict, List, Optional
 
 class FastChain:
 
-    def __init__(self) -> None:
+    def __init__(self, settings: AppSettings) -> None:
+        self.settings = settings
         self.routes: List[Route] = []
         self._default_route: Route = None
+        self._processing_settings(settings)
 
-    def add_route(self, route: Route, default_route=False):
+    def _processing_settings(self, settings: AppSettings):
+        for rag in settings.rags:
+            self.add_route(rag.create_route(get_llm(settings.default_llm)))
+
+    def add_route(self, route: Route, default_route=False, add_default_to_routes=True):
         if not default_route:
             self.routes.append(route)
-        else:
+        if default_route and add_default_to_routes:
+            self.routes.append(route)
+        if default_route:
             self._default_route = route
 
     def add(self, name: str, description: str, chain: Chain, default_route=False):

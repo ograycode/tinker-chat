@@ -5,6 +5,7 @@ from pydantic import BaseSettings, BaseModel
 from langchain.chains.base import Chain
 from langchain.chains import RetrievalQA
 from src.vectore_store import load_or_create
+from src.llm import LLM
 
 CONFIG_FILE_NAME: str = "config.json"
 
@@ -59,6 +60,7 @@ class RAG(BaseModel):
 class AppSettings(BaseSettings):
     vector_storage_subdir: str = ".index"
     rags: List[RAG] = []
+    default_llm: LLM = LLM.ORCA_MINI
     
     def save(self):
         with open(CONFIG_FILE_NAME, "w") as f:

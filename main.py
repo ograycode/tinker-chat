@@ -1,7 +1,6 @@
 import typer
 from src.commands import chat, rag
 from src.commands.rag import app as rag_commands
-from src import vectore_store
 
 app = typer.Typer()
 
