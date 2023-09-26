@@ -1,7 +1,9 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional, Sequence
+from uuid import UUID
 from langchain.chains.base import Chain
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.schema import AgentFinish, LLMResult
+from langchain.schema.document import Document
 from rich.table import Column
 from rich.progress import Progress, SpinnerColumn, TextColumn, RenderableColumn
 from rich.prompt import Prompt
@@ -76,3 +78,7 @@ class StreamOut(StreamingStdOutCallbackHandler):
         self._spin.columns = (RenderableColumn(" "), ) + self._spin.columns[1:]
         self._spin.refresh()
         self._spin.stop()
+        
+    def on_retriever_end(self, documents: Sequence[Document], *, run_id: UUID, parent_run_id: UUID | None = None, **kwargs: Any) -> Any:
+        context = '\n\n----------\n\n'.join([d.page_content for d in documents])
+        r_print(f"[bright_black]context: {context}[/]")
