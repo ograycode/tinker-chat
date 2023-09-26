@@ -1,4 +1,4 @@
-from langchain import PromptTemplate
+from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.chains.llm import LLMChain
 from langchain.retrievers import WikipediaRetriever
