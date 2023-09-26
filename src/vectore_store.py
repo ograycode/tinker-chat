@@ -14,7 +14,10 @@ EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
 def create_and_load_index(data_dir="./data", persist_dir="./data") -> Chroma:
     embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
-    dir_loader = DirectoryLoader(data_dir, show_progress=True, loader_cls=UnstructuredFileLoader)
+    dir_loader = DirectoryLoader(data_dir,
+                                 show_progress=True,
+                                 loader_cls=UnstructuredFileLoader,
+                                 silent_errors=True)
     docs = dir_loader.load_and_split(CharacterTextSplitter(chunk_size=500, chunk_overlap=10))
     return Chroma.from_documents(docs, embeddings, persist_directory=persist_dir)
 
