@@ -1,4 +1,5 @@
 import re
+from abc import ABC, abstractmethod
 from langchain.chains.base import Chain
 from langchain.chains.router import MultiRouteChain
 from langchain.chains.router.embedding_router import EmbeddingRouterChain
@@ -10,16 +11,49 @@ from src.llm import get_llm
 from src.ui import chat_loop, spinner
 from src.vectore_store import get_embeddings
 
+from typing import Any, Callable, Dict, List, Optional
 
-from typing import Any, Dict, List, Optional
+
+
+class FastChainSchema(ABC):
+    routes: List[Route]
+
+    @abstractmethod
+    def build_chain(self) -> Chain:
+        pass
+
+
+def default_chain_builder(app: FastChainSchema) -> Chain:
+    router = BangEmbeddingRouterChain.from_names_and_descriptions(
+        [(r.name, r.description,) for r in app.routes],
+        Chroma,
+        get_embeddings()
+    )
+
+    return MultiRouteChain(
+        router_chain=router,
+        destination_chains={r.name: r.chain for r in app.routes},
+        default_chain=app._default_route.chain,
+    )
+
+
+def terminal_ui(app: FastChainSchema):
+    with spinner("building..."):
+        chain = app.build_chain()
+    chat_loop(chain, app.routes)
 
 
 class FastChain:
 
-    def __init__(self, settings: AppSettings) -> None:
+    def __init__(self,
+                 settings: AppSettings,
+                 chain_builder: Callable[[FastChainSchema], Chain]=default_chain_builder,
+                 serve: Callable[[FastChainSchema], None]=terminal_ui) -> None:
         self.settings = settings
         self.routes: List[Route] = []
         self._default_route: Route = None
+        self._chain_builder = chain_builder
+        self._serve = serve
         self._processing_settings(settings)
 
     def _processing_settings(self, settings: AppSettings):
@@ -41,22 +75,10 @@ class FastChain:
         self.add_route(route, default_route=default_route)
 
     def build_chain(self) -> Chain:
-        router = BangEmbeddingRouterChain.from_names_and_descriptions(
-            [(r.name, r.description,) for r in self.routes],
-            Chroma,
-            get_embeddings()
-        )
-
-        return MultiRouteChain(
-            router_chain=router,
-            destination_chains={r.name: r.chain for r in self.routes},
-            default_chain=self._default_route.chain,
-        )
+        return self._chain_builder(self)
 
     def serve(self):
-        with spinner("building..."):
-            chain = self.build_chain()
-        chat_loop(chain, self.routes)
+        self._serve(self)
 
 
 class BangEmbeddingRouterChain(EmbeddingRouterChain):
