@@ -1,5 +1,5 @@
 import typer
-from src.vectore_store import load_or_create
+from src.vectore_store import Coordinator
 from src.vectore_store import destroy as destroy_store
 from src.models import RAG, AppSettings
 
@@ -9,7 +9,7 @@ app = typer.Typer()
 def create(name: str, description: str, directory: str, persist_directory: str):
     settings = AppSettings()
     persist_dir = f"{persist_directory}/{settings.vector_storage_subdir}"
-    load_or_create(data_dir=directory, persist_dir=persist_dir)
+    Coordinator().load_or_create(directory, persist_dir)
     rag = RAG(name=name, description=description, directory=directory, persist_directory=persist_dir)
     settings.rags.append(rag)
     settings.save()
@@ -20,7 +20,7 @@ def refresh(name: str):
     settings = AppSettings()
     for r in settings.rags:
         if r.name == name:
-            load_or_create(data_dir=r.directory, persist_dir=r.persist_directory, refresh=True)
+            Coordinator().load_or_create(r.directory, r.persist_directory, refresh=True)
 
 
 @app.command(name="destroy")

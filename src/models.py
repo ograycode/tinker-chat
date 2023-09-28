@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import BaseSettings, BaseModel
 from langchain.chains.base import Chain
 from langchain.chains import RetrievalQA
-from src.vectore_store import load_or_create
+from src.vectore_store import Coordinator
 from src.llm import LLM
 
 CONFIG_FILE_NAME: str = "config.json"
@@ -49,7 +49,7 @@ class RAG(BaseModel):
         Raises:
             FileNotFoundError: If the specified index does not exist.
         """
-        docsearch = load_or_create(data_dir=self.directory, persist_dir=self.persist_directory).as_retriever()
+        docsearch = Coordinator().load_or_create(self.directory, self.persist_directory).as_retriever()
         return Route(
             name=self.name,
             description=self.description,

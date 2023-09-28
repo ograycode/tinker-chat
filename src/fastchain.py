@@ -9,7 +9,7 @@ from langchain.schema.agent import AgentFinish
 from src.models import Route, AppSettings
 from src.llm import get_llm
 from src.ui import chat_loop, spinner
-from src.vectore_store import get_embeddings
+from src.vectore_store import Coordinator
 
 from typing import Any, Callable, Dict, List, Optional
 
@@ -24,10 +24,11 @@ class FastChainSchema(ABC):
 
 
 def default_chain_builder(app: FastChainSchema) -> Chain:
+    co = Coordinator()
     router = BangEmbeddingRouterChain.from_names_and_descriptions(
         [(r.name, r.description,) for r in app.routes],
-        Chroma,
-        get_embeddings()
+        co.vector_store,
+        co.embeddings
     )
 
     return MultiRouteChain(
@@ -58,7 +59,7 @@ class FastChain:
 
     def _processing_settings(self, settings: AppSettings):
         for rag in settings.rags:
-            self.add_route(rag.create_route(get_llm(settings.default_llm)))
+            self.add_route(rag.create_route(self.get_llm(settings.default_llm)))
 
     def add_route(self, route: Route, default_route=False, add_default_to_routes=True):
         if not default_route:
@@ -79,6 +80,9 @@ class FastChain:
 
     def serve(self):
         self._serve(self)
+        
+    def get_llm(self, name: str):
+        return get_llm(name)
 
 
 class BangEmbeddingRouterChain(EmbeddingRouterChain):

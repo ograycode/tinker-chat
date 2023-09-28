@@ -7,7 +7,7 @@ from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.schema import Document
 from typing import Any, Dict, List
 from src.models import Route
-from src.vectore_store import in_memory
+from src.vectore_store import Coordinator 
 from src.llm import get_llm
 
 
@@ -33,5 +33,5 @@ class WikipediaVectorRetriever(WikipediaRetriever):
         self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
         docs = super()._get_relevant_documents(query, run_manager=run_manager)
-        retriever = in_memory(docs).as_retriever()
+        retriever = Coordinator.in_memory(docs).as_retriever()
         return retriever.get_relevant_documents(query, callbacks=run_manager)
