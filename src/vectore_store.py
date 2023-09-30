@@ -14,18 +14,117 @@ from langchain.schema.vectorstore import VectorStore
 
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
 
+# Dictionary mapping file extensions to language, class, chunk_size, and chunk_overlap
+SPLITTER_MAPPING = {
+    ".py": {
+        "args": (Language.PYTHON,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".cpp": {
+        "args": (Language.CPP,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".go": {
+        "args": (Language.GO,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".java": {
+        "args": (Language.JAVA,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".js": {
+        "args": (Language.JS,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".php": {
+        "args": (Language.PHP,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".proto": {
+        "args": (Language.PROTO,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".rst": {
+        "args": (Language.RST,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".ruby": {
+        "args": (Language.RUBY,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".rust": {
+        "args": (Language.RUST,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".scala": {
+        "args": (Language.SCALA,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".swift": {
+        "args": (Language.SWIFT,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".md": {
+        "args": (Language.MARKDOWN,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".tex": {
+        "args": (Language.LATEX,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".html": {
+        "args": (Language.HTML,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".sol": {
+        "args": (Language.SOL,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    ".cs": {
+        "args": (Language.CSHARP,),
+        "callable": RecursiveCharacterTextSplitter.from_language,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    },
+    "default": {
+        "args": set(),
+        "callable": RecursiveCharacterTextSplitter,
+        "kwargs": {"chunk_size": 500, "chunk_overlap": 10}
+    }
+}
+
+
 class Coordinator:
-    
+
     def __init__(self,
                  vector_store: VectorStore = Chroma,
-                 embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)) -> None:
+                 embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME),
+                 splitter_mapping=SPLITTER_MAPPING) -> None:
         self.vector_store = vector_store
         self.embeddings = embeddings
-    
+        self.splitter_mapping = splitter_mapping
+
     def get_splitter(self, doc: Document) -> TextSplitter:
-        if doc.metadata.get("source", "").endswith(".py"):
-            return RecursiveCharacterTextSplitter.from_language(Language.PYTHON, chunk_size=500, chunk_overlap=10)
-        return RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=10)
+        source_file: str = doc.metadata.get("source", "")
+        file_extension = source_file[source_file.rfind("."):]
+        mapped = self.splitter_mapping.get(file_extension, self.splitter_mapping["default"])
+        return mapped["callable"](*mapped["args"], **mapped["kwargs"])
+
     
     def get_loader(self, data_dir):
         return DirectoryLoader(data_dir,
@@ -61,7 +160,7 @@ class Coordinator:
         return self.vector_store.from_documents(split_docs, self.embeddings)
 
 
-def destroy(persist_dir):
-    persist_dir_exists = path.exists(persist_dir)
-    if persist_dir_exists:
-        shutil.rmtree(persist_dir)
+    def destroy(self, persist_dir):
+        persist_dir_exists = path.exists(persist_dir)
+        if persist_dir_exists:
+            shutil.rmtree(persist_dir)
