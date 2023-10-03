@@ -1,6 +1,5 @@
 import typer
 from src.vectore_store import Coordinator
-from src.vectore_store import destroy as destroy_store
 from src.models import RAG, AppSettings
 
 app = typer.Typer()
@@ -28,6 +27,6 @@ def destroy(name: str):
     settings = AppSettings()
     for r in settings.rags:
         if r.name == name:
-            destroy_store(r.persist_directory)
+            Coordinator().destroy(r.persist_directory)
     settings.rags = [r for r in settings.rags if r.name != name]
     settings.save()
