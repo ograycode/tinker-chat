@@ -59,7 +59,7 @@ class FastChain:
 
     def _processing_settings(self, settings: AppSettings):
         for rag in settings.rags:
-            self.add_route(rag.create_route(self.get_llm(settings.default_llm)))
+            self.add_route(rag.create_route())
 
     def add_route(self, route: Route, default_route=False, add_default_to_routes=True):
         if not default_route:

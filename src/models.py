@@ -5,7 +5,7 @@ from pydantic import BaseSettings, BaseModel
 from langchain.chains.base import Chain
 from langchain.chains import RetrievalQA
 from src.vectore_store import Coordinator
-from src.llm import LLM
+from src.llm import LLM, get_llm
 
 CONFIG_FILE_NAME: str = "config.json"
 
@@ -35,13 +35,11 @@ class RAG(BaseModel):
     description: str
     directory: str
     persist_directory: str
+    llm: LLM = LLM.ORCA_MINI
     
-    def create_route(self, llm) -> Route:
+    def create_route(self) -> Route:
         """
         Creates a Route instance with the given LangChain Language Model (llm).
-    
-        Args:
-            llm: A LangChain Language Model.
     
         Returns:
             A Route instance.
@@ -49,6 +47,7 @@ class RAG(BaseModel):
         Raises:
             FileNotFoundError: If the specified index does not exist.
         """
+        llm = get_llm(self.llm)
         docsearch = Coordinator().load_or_create(self.directory, self.persist_directory).as_retriever()
         return Route(
             name=self.name,
